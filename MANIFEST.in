@@ -1,0 +1,9 @@
+include LICENSE
+include README.md
+include pyproject.toml
+include setup.py
+include galaxy_gen/__init__.py
+include galaxy_gen/model.py
+include galaxy_gen/sampler.py
+include galaxy_gen/data/sample_data.pkl
+include galaxy_gen/models/sample_model.pth

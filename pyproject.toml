@@ -1,0 +1,16 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "galaxy_gen"
+version = "1.0.6"
+description = "A library to generate galaxy data/distributions."
+readme = "README.md"
+authors = [{name = "Abhiroop Ippagunta"}]
+dependencies = ["torch"]
+
+[tool.setuptools.package-data]
+"galaxy_gen" = ["data/*.pkl", "models/*.pth"]
