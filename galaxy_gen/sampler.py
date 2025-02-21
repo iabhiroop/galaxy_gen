@@ -5,8 +5,11 @@ import pickle
 import numpy as np
 import os
 from torch.utils.data import DataLoader, TensorDataset
+from torchvision import transforms
 from .metallicityModel import AutoregressiveVAE
 from .foramtiontimeModel import VAEWithResidualFlow_Gray
+from .massesModel import VAEFlow_mass
+from .gammaflowModel import VAEWithResidualFlow_galaxy
 
 def get_model_class(model_name, latent_dim, hidden_dim, num_flows):
     """
@@ -29,7 +32,19 @@ def get_model_class(model_name, latent_dim, hidden_dim, num_flows):
             latent_dim = 512
             hidden_dim = 256
             num_flows = 4
-        return AutoregressiveVAE, latent_dim, hidden_dim, num_flows
+        return AutoregressiveVAE, latent_dim, hidden_dim, num_flows 
+    elif model_name == 'masses':
+        if latent_dim is None or hidden_dim is None or num_flows is None:
+            latent_dim = 256
+            hidden_dim = 128
+            num_flows = 5
+        return VAEFlow_mass, latent_dim, hidden_dim, num_flows
+    elif model_name == 'galaxy':
+        if latent_dim is None or hidden_dim is None or num_flows is None:
+            latent_dim = 256
+            hidden_dim = 128
+            num_flows = 5
+            return VAEWithResidualFlow_galaxy, latent_dim, hidden_dim, num_flows
     else:
         raise ValueError(f"Unknown model name: {model_name}")
     
@@ -204,6 +219,86 @@ def generate_formationtime_samples(model, data_path="data/formationtime_data.pkl
                 break
             batch = batch[0].cpu()
             recon_batch, _, _ = model(batch)
+            return recon_batch
+    
+    return None
+
+
+def generate_masses_samples(model, data_path="data/mass_data.pkl", num_batches=1, batch_size=64):
+    """
+    Generate formation time samples using the trained model from data in a pickle file.
+    
+    Args:
+        model: trained VAE model
+        data_path: path to the pickle file containing the data
+        num_batches: number of batches to use for generation
+        batch_size: size of each batch
+    
+    Returns:
+        torch.Tensor: Generated formation time samples
+    """
+    if not os.path.exists(data_path):
+        data_path = os.path.join(os.path.dirname(__file__), data_path)
+    # Load data from pickle file
+    with open(data_path, 'rb') as f:
+        data = pickle.load(f)
+    
+    # Create DataLoader
+    # data = normalize_data(data)
+    print(data.shape)
+    # data = torch.tensor(data).float().unsqueeze(1)
+    dataset = TensorDataset(torch.tensor(data))
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    model = model.cpu()
+    model.eval()
+    
+    with torch.no_grad():
+        for i, batch in enumerate(train_loader):
+            if i >= num_batches:
+                break
+            batch = batch[0].cpu()
+            recon_batch, _, _, _ = model(batch)
+            return recon_batch
+    
+    return None
+
+def generate_galaxy_samples(model, data_path="data/galaxy_data.pkl", num_batches=1, batch_size=64):
+    """
+    Generate formation time samples using the trained model from data in a pickle file.
+    
+    Args:
+        model: trained VAE model
+        data_path: path to the pickle file containing the data
+        num_batches: number of batches to use for generation
+        batch_size: size of each batch
+    
+    Returns:
+        torch.Tensor: Generated formation time samples
+    """
+    if not os.path.exists(data_path):
+        data_path = os.path.join(os.path.dirname(__file__), data_path)
+    # Load data from pickle file
+    with open(data_path, 'rb') as f:
+        data = pickle.load(f)
+    
+    # Create DataLoader
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+    ])
+    dataset = TensorDataset(data)
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    model = model.cpu()
+    model.eval()
+    
+    with torch.no_grad():
+        for i, batch in enumerate(train_loader):
+            if i >= num_batches:
+                break
+            batch = batch[0].cpu()
+            recon_batch, _, _ = model(batch)
+            recon_batch = recon_batch.cpu().numpy()
             return recon_batch
     
     return None

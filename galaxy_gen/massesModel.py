@@ -92,12 +92,12 @@ class RealNVP(nn.Module):
             log_det += ld
         return z, log_det
 
-class VAEFlow(nn.Module):
-    def __init__(self, latent_dim, flow_hidden_dim, n_flow_layers):
-        super(VAEFlow, self).__init__()
+class VAEFlow_mass(nn.Module):
+    def __init__(self, latent_dim, hidden_dim, num_flows):
+        super(VAEFlow_mass, self).__init__()
         self.encoder = Encoder2D(latent_dim)
         self.decoder = Decoder2D(latent_dim)
-        self.flow = RealNVP(latent_dim, flow_hidden_dim, n_flow_layers)
+        self.flow = RealNVP(latent_dim, hidden_dim, num_flows)
 
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5 * logvar)

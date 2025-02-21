@@ -33,6 +33,6 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        'galaxy_gen': ['data/*', 'model/*']
+        'galaxy_gen': []
     }
 )
