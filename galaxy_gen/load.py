@@ -8,7 +8,7 @@ def load_data():
     folder2_id = "18Mpjs4qNKLONGvMZ-rqtSynpxDNGs8Ui"
 
     # Destination paths
-    dest_folder1 = "model"
+    dest_folder1 = "models"
     dest_folder2 = "data"
     # Ensure destination exists
     os.makedirs(dest_folder1, exist_ok=True)

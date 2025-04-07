@@ -1,15 +1,18 @@
 # my_vae_sampler/sampler.py
 import torch
-from .samplemodel import VAEFlow
+from .genmodels.samplemodel import VAEFlow
 import pickle
 import numpy as np
 import os
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision import transforms
-from .metallicityModel import AutoregressiveVAE
-from .foramtiontimeModel import VAEWithResidualFlow_Gray
-from .massesModel import VAEFlow_mass
-from .gammaflowModel import VAEWithResidualFlow_galaxy
+from .genmodels.metallicityModel import AutoregressiveVAE
+from .genmodels.foramtiontimeModel import VAEWithResidualFlow_Gray
+from .genmodels.massesModel import VAEFlow_mass
+from .genmodels.gammaflowModel import VAEWithResidualFlow_galaxy
+from .genmodels.metallicitydModel import load_model as load_diffusion_model
+from .genmodels.lofarModel import model_utils
+from .genmodels.lofarModel.sampler import Sampler
 
 def get_model_class(model_name, latent_dim, hidden_dim, num_flows):
     """
@@ -63,13 +66,18 @@ def load_model(model_name, model_path, latent_dim=None, hidden_dim=None, num_flo
     Returns:
         model: The loaded model in evaluation mode.
     """
-    model_class, latent_dim, hidden_dim, num_flows = get_model_class(model_name,latent_dim=latent_dim, hidden_dim=hidden_dim, num_flows=num_flows)
-    model = model_class(latent_dim=latent_dim, hidden_dim=hidden_dim, num_flows=num_flows)
-    state_dict = torch.load(model_path, map_location=device)
-    model.load_state_dict(state_dict)
-    model.to(device)
-    model.eval()
-    return model
+    if model_name == "metallicity_diffusion":
+        model = load_diffusion_model()
+    elif model_name == "Lofar":
+        model = model_utils.load_model(model_name)
+    else:
+        model_class, latent_dim, hidden_dim, num_flows = get_model_class(model_name,latent_dim=latent_dim, hidden_dim=hidden_dim, num_flows=num_flows)
+        model = model_class(latent_dim=latent_dim, hidden_dim=hidden_dim, num_flows=num_flows)
+        state_dict = torch.load(model_path, map_location=device)
+        model.load_state_dict(state_dict)
+        model.to(device)
+        model.eval()
+        return model
 
 def load_sample_model(model_path, latent_dim=64, hidden_dim=128, num_flows=4, device='cpu'):
     """
@@ -111,11 +119,11 @@ def normalize_data(data):
 
 def generate_samples(model, data_path="data/sample_data.pkl", num_batches=1, batch_size=64):
     """
-    Generate samples using the trained model from data in a pickle file.
+    Generate samples using the trained model.
     
     Args:
         model: trained VAE model
-        data_path: path to the pickle file containing the data
+        data_path: path to the file containing the data
         num_batches: number of batches to use for generation
         batch_size: size of each batch
     
@@ -149,11 +157,11 @@ def generate_samples(model, data_path="data/sample_data.pkl", num_batches=1, bat
 
 def generate_metallicity_samples(model, data_path="data/metallicity_data.pkl", num_batches=1, batch_size=64):
     """
-    Generate metallicity samples using the trained model from data in a pickle file.
+    Generate metallicity samples using the trained model.
     
     Args:
         model: trained MetallicityVAE model
-        data_path: path to the pickle file containing the data
+        data_path: path to the file containing the data
         num_batches: number of batches to use for generation
         batch_size: size of each batch
     
@@ -187,11 +195,11 @@ def generate_metallicity_samples(model, data_path="data/metallicity_data.pkl", n
 
 def generate_formationtime_samples(model, data_path="data/formationtime_data.pkl", num_batches=1, batch_size=64):
     """
-    Generate formation time samples using the trained model from data in a pickle file.
-    
+    Generate formation time samples using the trained model
+
     Args:
         model: trained VAE model
-        data_path: path to the pickle file containing the data
+        data_path: path to the file containing the data
         num_batches: number of batches to use for generation
         batch_size: size of each batch
     
@@ -226,11 +234,11 @@ def generate_formationtime_samples(model, data_path="data/formationtime_data.pkl
 
 def generate_masses_samples(model, data_path="data/mass_data.pkl", num_batches=1, batch_size=64):
     """
-    Generate formation time samples using the trained model from data in a pickle file.
+    Generate formation time samples using the trained model.
     
     Args:
         model: trained VAE model
-        data_path: path to the pickle file containing the data
+        data_path: path to the file containing the data
         num_batches: number of batches to use for generation
         batch_size: size of each batch
     
@@ -263,13 +271,56 @@ def generate_masses_samples(model, data_path="data/mass_data.pkl", num_batches=1
     
     return None
 
+def generate_metallicity_diffusion_samples(model):
+    """
+    Generate metallicity diffusion samples using the trained model.
+    
+    Args:
+        model: diffusion model
+        data_path: path to the file containing the data
+        num_batches: number of batches to use for generation
+        batch_size: size of each batch
+    
+    Returns:
+        torch.Tensor: Generated metallicity diffusion samples
+    """
+    sampled_images = model.sample(batch_size=4)
+    
+    return sampled_images
+
+def generate_lofar_diffusion_samples(model,label):
+    """
+    Generate lofar diffusion samples using the trained model
+    
+    Args:
+        model: diffusion model
+        data_path: path to the file containing the data
+        num_batches: number of batches to use for generation
+        batch_size: size of each batch
+    
+    Returns:
+        torch.Tensor: Generated diffusion samples
+    """
+    sampler = Sampler()
+    sampled_images = sampler.sample(
+        model_name='LOFAR_model',
+        model=model,
+        context=None,  # Replace with your context tensor if needed
+        labels=torch.tensor([3]),
+        latents=None,  # Replace with your latents tensor if needed
+        distribute_model=True,
+        device_ids=None,
+        file_name='sampled_images.h5'
+    )
+    return sampled_images
+
 def generate_galaxy_samples(model, data_path="data/galaxy_data.pkl", num_batches=1, batch_size=64):
     """
-    Generate formation time samples using the trained model from data in a pickle file.
+    Generate formation time samples using the trained model.
     
     Args:
         model: trained VAE model
-        data_path: path to the pickle file containing the data
+        data_path: path to the file containing the data
         num_batches: number of batches to use for generation
         batch_size: size of each batch
     
