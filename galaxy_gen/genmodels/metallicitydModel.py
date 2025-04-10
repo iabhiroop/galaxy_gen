@@ -1,7 +1,7 @@
 from denoising_diffusion_pytorch import Unet, GaussianDiffusion, Trainer
 import torch
 
-def load_model():
+def load_model(path):
     # Initialize the model
     model = Unet(
         dim=32,
@@ -18,7 +18,8 @@ def load_model():
     )
 
     # Load the saved model weights
-    model.load_state_dict(torch.load('diffusion_model_batch16.pth'))
+    model.load_state_dict(torch.load(path))
+    # Set the model to evaluation mode
     model.eval()
 
     return diffusion

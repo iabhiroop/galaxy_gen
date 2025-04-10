@@ -1,6 +1,6 @@
 # galaxy_gen
 
-`galaxy_gen` is a library to generate galaxy data/distributions.
+`galaxy_gen` is a library to generate galaxy data/distributions. This package implements the Flow-Augmented VAE architecture tailored for generating and reconstructing galaxy spectra. It provides a clean, modular interface for training, evaluating, and sampling from models, and supports configuration for different flow types (RealNVP, Autoregressive, Residual).
 
 ## Installation
 

@@ -4,9 +4,9 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
-import utils.logging
+# import utils.logging
 
-logger = utils.logging.get_logger(__name__)
+# logger = utils.logging.get_logger(__name__)
 
 
 @torch.no_grad()
@@ -74,7 +74,7 @@ def edm_sampling(
 
     # Set device
     device = next(model.parameters()).device
-    logger.info(f"Sampling on device: {device}")
+    # logger.info(f"Sampling on device: {device}")
 
     # If passed, prepare latents
     if latents is not None:

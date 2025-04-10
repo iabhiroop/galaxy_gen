@@ -7,3 +7,4 @@ include galaxy_gen/model.py
 include galaxy_gen/sampler.py
 include galaxy_gen/data/sample_data.pkl
 include galaxy_gen/models/sample_model.pth
+include galaxy_gen/genmodels/lofarModel/config_LOFAR_Model.json

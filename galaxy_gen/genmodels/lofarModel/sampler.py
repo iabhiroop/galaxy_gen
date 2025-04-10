@@ -6,11 +6,11 @@ import numpy as np
 from scipy.stats import rv_histogram
 from sklearn.preprocessing import PowerTransformer
 
-import utils.logging
-import utils.paths as paths
-import model.diffusion as diffusion
-import model.model_utils as model_utils
-import utils.device_utils as device_utils
+# import utils.logging
+from . import paths
+from . import diffusion
+from . import model_utils
+from . import device_utils
 
 
 class Sampler:
@@ -53,7 +53,7 @@ class Sampler:
         """
 
         # Logger
-        self.logger = utils.logging.get_logger(self.__class__.__name__)
+        # self.logger = utils.logging.get_logger(self.__class__.__name__)
 
         # Root for output
         self.out_root = out_root
@@ -170,7 +170,7 @@ class Sampler:
             # Settings already updated, no need to pass them again
         )
 
-        self.logger.info(f"Saving samples as '{dset_name}' to {out_file}...")
+        # self.logger.info(f"Saving samples as '{dset_name}' to {out_file}...")
         # Save samples
         self._save_batch_h5(
             out_file,
@@ -264,9 +264,9 @@ class Sampler:
 
         # If inputs are passed, they determine the number of samples
         if context is not None or labels is not None:
-            self.logger.info(
-                "Inferring number of samples from input shapes. Sampler settings will be changed."
-            )
+            # self.logger.info(
+            #     "Inferring number of samples from input shapes. Sampler settings will be changed."
+            # )
 
             # Assert equal shapes if both are passed
             if context is not None and labels is not None:
@@ -322,7 +322,7 @@ class Sampler:
         # Sampling
         batch_list = []
         for i in range(n_batches):
-            self.logger.info(f"Sampling batch {i+1}/{n_batches}...")
+            # self.logger.info(f"Sampling batch {i+1}/{n_batches}...")
             batch = diffusion.edm_sampling(
                 model,
                 context_batch=context[i] if context is not None else None,
@@ -341,7 +341,7 @@ class Sampler:
                 else model.to("cpu")
             )
 
-        self.logger.info("Reshaping output array...")
+        # self.logger.info("Reshaping output array...")
         # Output of sample_batch is list with T+1 entries of shape
         # (bsize, 1, 80, 80).
         # Batch_list is a list of such lists with n_batches entries,
@@ -519,10 +519,10 @@ class Sampler:
                 i = 1
                 while f"{dataset_name}_{i}" in f:
                     i += 1
-                self.logger.info(
-                    f"Dataset '{dataset_name}' already exists with different "
-                    f"attributes. Renaming to '{dataset_name}_{i}'."
-                )
+                # self.logger.info(
+                #     f"Dataset '{dataset_name}' already exists with different "
+                #     f"attributes. Renaming to '{dataset_name}_{i}'."
+                # )
                 dataset_name = f"{dataset_name}_{i}"
 
             # If settings are same, append data and return

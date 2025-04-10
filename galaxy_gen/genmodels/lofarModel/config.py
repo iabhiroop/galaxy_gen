@@ -2,8 +2,8 @@ import json
 from typing import Any
 from pathlib import Path
 from inspect import signature
-
-import utils.paths as paths
+import os
+from . import paths
 
 
 class ModelConfig(object):
@@ -39,30 +39,30 @@ class ModelConfig(object):
 
     @classmethod
     def from_preset(self, preset: Path | str) -> "ModelConfig":
-        match preset:
+        # match preset:
 
-            # If path is a file, it is either the config file or its parent:
-            case Path():
-                # If path is a directory:
-                if preset.is_dir():
-                    config_file = preset / f"config_{preset.name}.json"
+        #     # If path is a file, it is either the config file or its parent:
+        #     case Path():
+        #         # If path is a directory:
+        #         if preset.is_dir():
+        #             config_file = preset / f"config_{preset.name}.json"
 
-                # If path is the file itself, or unexisting (will raise error later):
-                else:
-                    config_file = preset
+        #         # If path is the file itself, or unexisting (will raise error later):
+        #         else:
+        #             config_file = preset
 
-            # If path is a string, it is assumed to be a model name:
-            case str():
-                config_file = paths.MODEL_CONFIGS[preset]
+        #     # If path is a string, it is assumed to be a model name:
+        #     case str():
+        #         config_file = paths.MODEL_CONFIGS[preset]
 
-            # Anything else is invalid.
-            case _:
-                raise ValueError(f"Invalid model identifier: {preset}")
+        #     # Anything else is invalid.
+        #     case _:
+        #         raise ValueError(f"Invalid model identifier: {preset}")
 
-        # Check if config file exists
-        if not config_file.exists():
-            raise FileNotFoundError(f"Config file {config_file} not found.")
-
+        # # Check if config file exists
+        # if not config_file.exists():
+        #     raise FileNotFoundError(f"Config file {config_file} not found.")
+        config_file = os.path.join(os.path.dirname(__file__), f'config_LOFAR_Model.json')
         # Load config file
         with open(config_file, "r") as f:
             config = json.load(f)

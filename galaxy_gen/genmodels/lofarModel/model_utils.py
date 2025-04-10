@@ -2,16 +2,17 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-
+import os
 # import utils.logging
-import model.unet as unet
-import utils.paths as paths
-from model.config import ModelConfig
+from . import unet
+from . import paths
+from .config import ModelConfig
 
 # logger = utils.logging.get_logger(__name__)
 
 
 def load_model(
+    model_name: str,
     source: str | Path,
     load_weights: bool = True,
     key: str = "ema_model",
@@ -57,36 +58,8 @@ def load_model(
 
     """
 
-    # Set paths according to source, which can be a file, a directory, or a model name.
-    match source:
-
-        # If source is a file, it is assumed to be the config file.
-        case Path() if source.is_file():
-            assert (
-                source.suffix == ".json"
-            ), f"This does not look like a config file: {source}"
-            model_dir = source.parent
-            config_file = source
-
-        # If source is a directory, it is assumed to be the model directory.
-        case Path() if source.is_dir():
-            model_name = source.name
-            model_dir = source
-            model_file = source / f"parameters_{model_name}.pt"
-            config_file = source / f"config_{model_name}.json"
-
-        # If source is a string, it is assumed to be the model name.
-        case str():
-            model_name = source
-            model_dir = (
-                paths.PRETRAINED_PARENT if from_pretrained else paths.MODEL_PARENT
-            ) / model_name
-            model_file = model_dir / f"parameters_{model_name}.pt"
-            config_file = model_dir / f"config_{model_name}.json"
-
-        # Anything else is invalid.
-        case _:
-            raise ValueError(f"Invalid model identifier: {source}")
+    model_file = source
+    config_file = os.path.join(os.path.dirname(__file__), f'models/config_{model_name}.json')
 
     # Load config and construct model
     # logger.info(f"Loading model from {config_file}")

@@ -67,9 +67,9 @@ def load_model(model_name, model_path, latent_dim=None, hidden_dim=None, num_flo
         model: The loaded model in evaluation mode.
     """
     if model_name == "metallicity_diffusion":
-        model = load_diffusion_model()
-    elif model_name == "Lofar":
-        model = model_utils.load_model(model_name)
+        model = load_diffusion_model(model_path)
+    elif model_name == "LOFAR_model":
+        model = model_utils.load_model(model_name,model_path)
     else:
         model_class, latent_dim, hidden_dim, num_flows = get_model_class(model_name,latent_dim=latent_dim, hidden_dim=hidden_dim, num_flows=num_flows)
         model = model_class(latent_dim=latent_dim, hidden_dim=hidden_dim, num_flows=num_flows)
@@ -77,7 +77,7 @@ def load_model(model_name, model_path, latent_dim=None, hidden_dim=None, num_flo
         model.load_state_dict(state_dict)
         model.to(device)
         model.eval()
-        return model
+    return model
 
 def load_sample_model(model_path, latent_dim=64, hidden_dim=128, num_flows=4, device='cpu'):
     """
@@ -117,7 +117,7 @@ def generate_random_samples(model, num_samples=64):
 def normalize_data(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
-def generate_samples(model, data_path="data/sample_data.pkl", num_batches=1, batch_size=64):
+def generate_samples(model, data_path="data/sample_data.pkl", num_batches=1, batch_size=8):
     """
     Generate samples using the trained model.
     
@@ -155,7 +155,7 @@ def generate_samples(model, data_path="data/sample_data.pkl", num_batches=1, bat
     
     return None
 
-def generate_metallicity_samples(model, data_path="data/metallicity_data.pkl", num_batches=1, batch_size=64):
+def generate_metallicity_samples(model, data_path="data/metallicity_data.pkl", num_batches=1, batch_size=8):
     """
     Generate metallicity samples using the trained model.
     
@@ -193,7 +193,7 @@ def generate_metallicity_samples(model, data_path="data/metallicity_data.pkl", n
     
     return None
 
-def generate_formationtime_samples(model, data_path="data/formationtime_data.pkl", num_batches=1, batch_size=64):
+def generate_formationtime_samples(model, data_path="data/formationtime_data.pkl", num_batches=1, batch_size=8):
     """
     Generate formation time samples using the trained model
 
@@ -232,7 +232,7 @@ def generate_formationtime_samples(model, data_path="data/formationtime_data.pkl
     return None
 
 
-def generate_masses_samples(model, data_path="data/mass_data.pkl", num_batches=1, batch_size=64):
+def generate_masses_samples(model, data_path="data/mass_data.pkl", num_batches=1, batch_size=8):
     """
     Generate formation time samples using the trained model.
     
@@ -303,18 +303,19 @@ def generate_lofar_diffusion_samples(model,label):
     """
     sampler = Sampler()
     sampled_images = sampler.sample(
-        model_name='LOFAR_model',
+        model_name="LOFAR_model",
         model=model,
-        context=None,  # Replace with your context tensor if needed
-        labels=torch.tensor([3]),
-        latents=None,  # Replace with your latents tensor if needed
+        context=None,
+        labels=torch.tensor([[label],[label],[label],[label]]),
+        latents=None,
         distribute_model=True,
         device_ids=None,
         file_name='sampled_images.h5'
-    )
+        )
+    # print(sampled_images.shape)
     return sampled_images
 
-def generate_galaxy_samples(model, data_path="data/galaxy_data.pkl", num_batches=1, batch_size=64):
+def generate_galaxy_samples(model, data_path="data/galaxy_data.pkl", num_batches=1, batch_size=8):
     """
     Generate formation time samples using the trained model.
     
